@@ -1,5 +1,5 @@
-from products.models import Categories
+from products.models import Category
 
 def get_all_categories(request):
-    categories = Categories.objects.all()
+    categories = Category.objects.all()
     return {"categories": categories}

@@ -1,0 +1,84 @@
+{% extends 'dashboard/_layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+    <div class="card text-dark bg-light mb-3">
+        <div class="card-header"><b>Category List</b></div>
+        <div class="card-body">
+            {% csrf_token %}
+            <table class="table table-hover" style="width: 100%;" id="categoryDatatable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th style="text-align: right;"></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'create_category' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Category</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    var csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+    var table = $('#categoryDatatable').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        ordering: false,
+        ajax: {
+            url: '/web/category-list/',
+            type: 'GET',
+            dataSrc: 'data',
+            data: function (d) {
+                d.start = d.start || 0;
+                d.length = d.length || 10;
+                return d;
+            },
+        },
+        columns: [
+            { data: '0' },
+            { data: '1' },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return '<div style="text-align: right;"> \
+                                <a class="btn btn-success btn-sm update-btn" href="/web/update-category/' + row[0] + '"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
+                                <button class="btn btn-danger btn-sm delete-btn" data-row-id="' + row[0] + '"><i class="fa-solid fa-trash"></i> Delete</button> \
+                            </div>';
+                },
+            },
+        ],
+    });
+
+    $('#categoryDatatable').on('click', '.delete-btn', function () {
+        var confirmed = confirm('Are you want to sure delete this category?');
+
+        if (confirmed) {
+            var rowId = $(this).data('row-id');
+            $.ajax({
+                type: 'POST',
+                url: '/web/delete-category/' + rowId + '/',
+                data: {},
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                success: function (response) {
+                    alert(response.message);
+                    table.ajax.reload();
+                },
+                error: function (response) {
+                    alert(response.message);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
