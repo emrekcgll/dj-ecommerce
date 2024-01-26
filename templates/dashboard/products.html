@@ -10,7 +10,7 @@
             <table class="table table-hover" style="width: 100%;" id="productDatatable">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th></th>
                         <th>Category</th>
                         <th>Brand</th>
                         <th>Name</th>
@@ -46,15 +46,19 @@
             },
         },
         columns: [
-            { data: '0' },
-            { data: '1' },
+            { data: '1',
+              render: function (data, type, row){
+                return '<img width="100px" src="' + row[1] + '">';
+              },
+            },
             { data: '2' },
             { data: '3' },
+            { data: '4' },
             {
                 data: null,
                 render: function (data, type, row) {
                     return '<div style="text-align: right;"> \
-                                <a class="btn btn-success btn-sm update-btn" href="/web/update-product/' + row[0] + '"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
+                                <a class="btn btn-success btn-sm update-btn" href="/web/update-product/' + row[0] + '/"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
                                 <button class="btn btn-danger btn-sm delete-btn" data-row-id="' + row[0] + '"><i class="fa-solid fa-trash"></i> Delete</button> \
                             </div>';
                 },

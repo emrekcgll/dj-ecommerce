@@ -12,6 +12,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
+                        <th>Product Count</th>
                         <th style="text-align: right;"></th>
                     </tr>
                 </thead>
@@ -46,11 +47,12 @@
         columns: [
             { data: '0' },
             { data: '1' },
+            { data: '2' },
             {
                 data: null,
                 render: function (data, type, row) {
                     return '<div style="text-align: right;"> \
-                                <a class="btn btn-success btn-sm update-btn" href="/web/update-category/' + row[0] + '"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
+                                <a class="btn btn-success btn-sm update-btn" href="/web/update-category/' + row[0] + '/"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
                                 <button class="btn btn-danger btn-sm delete-btn" data-row-id="' + row[0] + '"><i class="fa-solid fa-trash"></i> Delete</button> \
                             </div>';
                 },

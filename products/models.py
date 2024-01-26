@@ -14,6 +14,9 @@ class Category(BaseModel):
     slug = models.SlugField(unique=True, blank=True)
     name = models.CharField(max_length=100)
 
+    def product_count(self):
+        return self.product_set.count()
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
@@ -32,6 +35,9 @@ class Brand(BaseModel):
     slug = models.SlugField(unique=True)
     name = models.CharField(max_length=100)
     
+    def product_count(self):
+        return self.product_set.count()
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
@@ -54,6 +60,12 @@ class Product(BaseModel):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     
+    def first_image(self):
+        first_image = self.image_set.first()  # İlk görseli al
+        if first_image:
+            return first_image.image.url  # Görsel URL'sini döndür
+        return None
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
