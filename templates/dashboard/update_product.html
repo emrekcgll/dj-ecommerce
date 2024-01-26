@@ -1,0 +1,60 @@
+{% extends 'dashboard/_layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card text-dark bg-light mb-3">
+                <div class="card-header"><b>Update Product</b></div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{form|crispy}}
+                        <button class="btn btn-primary btn-sm">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-dark bg-light mb-3">
+                <div class="card-header"><b>Product Images</b></div>
+                <div class="card-body">
+                    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                            {% for image in product_images %}
+                            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" {% endif %}></button>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-inner">
+                            {% for image in product_images %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" class="d-block w-100">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block script %}
+    <script>
+        var myCarousel = document.querySelector('#carouselExampleIndicators')
+        var carousel = new bootstrap.Carousel(myCarousel, {
+            interval: 2200,
+            
+        });
+    </script>
+    {% endblock %}

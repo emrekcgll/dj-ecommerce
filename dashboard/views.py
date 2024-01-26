@@ -1,7 +1,9 @@
+import os
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from dashboard.forms import *
 from django.core.paginator import Paginator
+from django.conf import settings
 
 
 def dashboard(request):
@@ -137,16 +139,73 @@ def delete_brand(request, pk):
 
 
 def product_list(request):
-    pass
+    products = Product.objects.all()
+    start = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 10))
+    min_length = 10
+    max_length = 100
+    length = max(min_length, min(length, max_length))
+    search_value = request.GET.get('search[value]', '')
+    if 30 > len(search_value) > 3:
+        products = products.filter(name__icontains=search_value)
+    paginator = Paginator(products, length)
+    products_on_page = paginator.page((start // length) + 1)
+    data = {
+        'data': [],
+        'recordsTotal': products.count(),
+        'recordsFiltered': paginator.count,
+    }
+    for product in products_on_page:
+        data['data'].append([
+            product.id,
+            product.category.name,
+            product.brand.name,
+            product.name,
+        ])
+        print(data)
+    return JsonResponse(data)
 
 def products(request):
-    pass
+    return render(request, 'dashboard/products.html')
 
 def create_product(request):
-    pass
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.created_by = request.user
+            product.save()
 
-def update_product(request):
-    pass
+            product_instance = get_object_or_404(Product, pk=product.pk)
 
-def delete_product(request):
-    pass
+            images = request.FILES.getlist("images")
+            for image in images:
+                Image.objects.create(product=product_instance, image=image)
+
+            return redirect('products')
+    else:
+        form = ProductForm()
+    return render(request, 'dashboard/create_product.html', {'form': form})
+
+def update_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    product_images = get_list_or_404(Image, product=product)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.save()
+            return redirect('products')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'dashboard/update_product.html', {'form': form, 'product_images': product_images})
+
+def delete_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        for img in Image.objects.filter(product=product):
+            os.remove(os.path.join(settings.MEDIA_ROOT, img.image.name))
+            img.delete()
+        product.delete()
+        return JsonResponse({'message': 'Product deleted successfully.'})
+    return JsonResponse({'message': 'Product delete operation is unsuccessful.'}, status=400)

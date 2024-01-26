@@ -66,9 +66,9 @@ class Product(BaseModel):
         db_table = 'product'
 
 
-class Images(models.Model):
+class Image(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='product-image/')
+    image = models.ImageField()
 
     class Meta:
-        db_table = 'images'
+        db_table = 'image'

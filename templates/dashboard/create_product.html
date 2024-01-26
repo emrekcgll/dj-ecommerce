@@ -1,0 +1,23 @@
+{% extends 'dashboard/_layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+    <div class="card text-dark bg-light mb-3">
+        <div class="card-header"><b>New Product</b></div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form|crispy}}
+                <div id="div_id_image" class="mb-3"> <label for="id_image" class="form-label requiredField">Images<span class="asteriskField">*</span></label>
+                    <div>
+                        <input type="file" name="images" multiple="multiple" class="form-control" accept="image/*" id="id_image" required="">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
