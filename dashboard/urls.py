@@ -4,6 +4,7 @@ from .views import *
 urlpatterns = [
     path('', dashboard, name='dashboard'),
 
+
     path('category-list/', category_list),
     path('product-list-by-category/<int:pk>/', product_list_by_category),
     path('categories/', categories, name='categories'),
@@ -16,7 +17,7 @@ urlpatterns = [
     path('brand-list/', brand_list),
     path('product-list-by-brand/<int:pk>/', product_list_by_brand),
     path('brands/', brands, name='brands'),
-    path('brand/<int:pk>', brand, name='brand'),
+    path('brand/<int:pk>/', brand, name='brand'),
     path('new-brand/', create_brand, name='create_brand'),
     path('update-brand/<int:pk>/', update_brand, name='update_brand'),
     path('delete-brand/<int:pk>/', delete_brand),
@@ -27,4 +28,8 @@ urlpatterns = [
     path('new-product/', create_product, name='create_product'),
     path('update-product/<int:pk>/', update_product, name='update_product'),
     path('delete-product/<int:pk>/', delete_product),
+
+
+    path('import-data/', import_data, name='import-data'),
+    path('missing-images/', missing_images, name='missing-images'),
 ]

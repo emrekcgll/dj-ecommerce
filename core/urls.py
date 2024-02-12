@@ -8,8 +8,9 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('web/', include('dashboard.urls')),
     path('orders/', include('orders.urls')),
+    
     path('', include('home.urls')),
     path('', include('products.urls')),
 ]
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

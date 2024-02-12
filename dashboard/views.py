@@ -1,9 +1,13 @@
 import os
-from django.http import JsonResponse
+import io
+import csv
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from dashboard.forms import *
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.contrib import messages
+import pandas as pd
 
 
 def dashboard(request):
@@ -73,6 +77,8 @@ def product_list_by_category(request, pk):
     for product in products_on_page:
         data['data'].append([
             product.id,
+            product.first_image(),
+            product.brand.name,
             product.name,
         ])
     return JsonResponse(data)
@@ -107,6 +113,13 @@ def update_category(request, pk):
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
+        for product in Product.objects.filter(category=category):
+            for image in Image.objects.filter(product=product):
+                try:
+                    os.remove(os.path.join(settings.MEDIA_ROOT, image.image.name))
+                    image.delete()
+                except Exception as e:
+                    print(e)
         category.delete()
         return JsonResponse({'message': 'Category deleted successfully.'})
     return JsonResponse({'message': 'Category delete operation is unsuccessful.'}, status=400)
@@ -144,7 +157,7 @@ def brands(request):
 
 def brand(request, pk):
     brand = get_object_or_404(Brand, pk=pk)
-    return render(request, 'dashboard/brand.html')
+    return render(request, 'dashboard/brand.html', {'brand': brand})
 
 
 def product_list_by_brand(request, pk):
@@ -168,6 +181,8 @@ def product_list_by_brand(request, pk):
     for product in products_on_page:
         data['data'].append([
             product.id,
+            product.first_image(),
+            product.category.name,
             product.name,
         ])
     return JsonResponse(data)
@@ -202,6 +217,13 @@ def update_brand(request, pk):
 def delete_brand(request, pk):
     brand = get_object_or_404(Brand, pk=pk)
     if request.method == 'POST':
+        for product in Product.objects.filter(brand=brand):
+            for image in Image.objects.filter(product=product):
+                try:
+                    os.remove(os.path.join(settings.MEDIA_ROOT, image.image.name))
+                    image.delete()
+                except Exception as e:
+                    print(e)
         brand.delete()
         return JsonResponse({'message': 'Brand deleted successfully.'})
     return JsonResponse({'message': 'Brand delete operation is unsuccessful.'}, status=400)
@@ -232,7 +254,6 @@ def product_list(request):
             product.brand.name,
             product.name,
         ])
-        print(data)
     return JsonResponse(data)
 
 
@@ -249,8 +270,9 @@ def create_product(request):
             product.save()
             product_instance = get_object_or_404(Product, pk=product.pk)
             images = request.FILES.getlist("images")
-            for image in images:
-                Image.objects.create(product=product_instance, image=image)
+            if images:
+                for image in images:
+                    Image.objects.create(product=product_instance, image=image)
             return redirect('products')
     else:
         form = ProductForm()
@@ -280,3 +302,75 @@ def delete_product(request, pk):
         product.delete()
         return JsonResponse({'message': 'Product deleted successfully.'})
     return JsonResponse({'message': 'Product delete operation is unsuccessful.'}, status=400)
+
+
+def import_data(request):
+    if request.method == 'POST':
+        form = ImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = form.cleaned_data['file']
+            try:
+                df = pd.read_csv(io.TextIOWrapper(csv_file, encoding='utf-8'))
+                for index, row in df.iterrows():
+                    user = request.user
+
+                    category_name = row['category'].strip()
+                    category_slug = slugify(category_name)
+
+                    brand_name = row['brand'].strip()
+                    brand_slug = slugify(brand_name)
+
+                    part_no = row['part_no'].strip()
+                    part_no_slug = slugify(part_no)
+
+                    price = str(row['price']).strip() if pd.notnull(
+                        row['price']) else '0'
+                    description = row['description'].strip()
+                    image = row['image'].strip()
+
+                    category, _ = Category.objects.get_or_create(slug=category_slug,
+                                                                 defaults={'slug': category_slug, 'name': category_name, 'created_by': user})
+
+                    brand, _ = Brand.objects.get_or_create(slug=brand_slug,
+                                                           defaults={'slug': brand_slug, 'name': brand_name, 'created_by': user})
+
+                    product, status = Product.objects.get_or_create(slug=part_no_slug,
+                                                                    defaults={'category': category, 'brand': brand, 'slug': part_no_slug, 'name': part_no,
+                                                                              'price': price, 'description': description, 'created_by': user})
+                    if status and image:
+                        image, _ = Image.objects.get_or_create(image=image, product=product, defaults={
+                                                               'image': image, 'product': product})
+
+                messages.success(request, "Data import successful.")
+            except Exception as e:
+                messages.error(
+                    request, f"An error occurred: {str(e)}, {product}-{brand}-{category}")
+    else:
+        form = ImportForm()
+    return render(request, "dashboard/import_data.html", {"form": form})
+
+
+def missing_images(request):
+    # Media klasörü yolunu alın
+    media_root = f'{settings.MEDIA_ROOT}/product_image/'
+
+    # Veritabanında bulunan görsel dosyaların listesi
+    database_images = Image.objects.values_list('image', flat=True)
+
+    # Media klasöründeki görsel dosyaların listesi
+    media_files = [os.path.join(media_root, image)
+                   for image in os.listdir(media_root)]
+
+    # Media klasöründeki dosyaların yalnızca dosya adlarını alın
+    media_filenames = [os.path.basename(image) for image in media_files]
+
+    # Veritabanında bulunan ancak media klasöründe olmayan görsellerin listesi
+    missing_images = set(database_images) - set(media_filenames)
+
+    # Görsel dosyalarını içeren bir metin dosyası oluşturun
+    missing_images_text = "\n".join(missing_images)
+
+    # Metin dosyasını HttpResponse olarak döndürün
+    response = HttpResponse(missing_images_text, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="missing-images.txt"'
+    return response

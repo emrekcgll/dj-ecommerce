@@ -52,6 +52,7 @@
                 data: null,
                 render: function (data, type, row) {
                     return '<div style="text-align: right;"> \
+                                <a class="btn btn-secondary btn-sm" href="/web/brand/' + row[0] + '/"><i class="fa-regular fa-eye"></i> View</a> \
                                 <a class="btn btn-success btn-sm update-btn" href="/web/update-brand/' + row[0] + '/"><i class="fa-solid fa-pen-to-square"></i> Update</a> \
                                 <button class="btn btn-danger btn-sm delete-btn" data-row-id="' + row[0] + '"><i class="fa-solid fa-trash"></i> Delete</button> \
                             </div>';
@@ -61,6 +62,41 @@
     });
 
     $('#brandDatatable').on('click', '.delete-btn', function () {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var rowId = $(this).data('row-id');
+                $.ajax({
+                    type: 'POST',
+                    url: '/web/delete-brand/' + rowId + '/',
+                    data: {},
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: response.message,
+                            icon: 'success'
+                        });
+                        table.ajax.reload();
+                    },
+                    error: function (response) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error',
+                        });
+                    }
+                });
+            }
+        });
+        /*
         var confirmed = confirm('Are you want to sure delete this brand?');
 
         if (confirmed) {
@@ -81,6 +117,7 @@
                 }
             });
         }
+        */
     });
 </script>
 {% endblock %}

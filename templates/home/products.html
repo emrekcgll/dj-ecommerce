@@ -2,45 +2,58 @@
 {% load static %}
 
 {% block content %}
-<header class="bg-dark py-5">
-    <div class="container px-4 px-lg-5 my-5">
-        <div class="text-center text-white">
-            <h1 class="display-4 fw-bolder">Shop in style</h1>
-            <p class="lead fw-normal text-white-50 mb-0">With this shop hompeage template</p>
+<div class="container px-4 px-lg-5 py-5">
+    <div class="row gx-4 gx-lg-5 align-items-center my-5">
+        <div class="col-lg-7">
+            <img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/dee2e6/6c757d.jpg" alt="..." />
+        </div>
+        <div class="col-lg-5">
+            <h1 class="font-weight-light">{% if category %}{{category}} Product List{% elif brand %}{{brand}} Product List{% endif %}</h1>
+            <p>This is a template that is great for small businesses. It doesn't have too much fancy flare to it, but it
+                makes a great use of the standard Bootstrap core components. Feel free to use this template for any
+                project you want!</p>
+            <a class="btn btn-primary" href="#!">Call to Action!</a>
         </div>
     </div>
-</header>
-<section class="py-5">
-    <div class="container px-4 px-lg-5 mt-5">
-        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-            {% for product in products %}
-            <div class="col mb-5">
-                <a href="{% url 'product' product.brand.slug product.slug %}">
-                <div class="card h-100">
-                    <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <h5 class="fw-bolder">{{product}}</h5>
-                            <div class="d-flex justify-content-center small text-warning mb-2">
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                            </div>
-                            <span class="text-muted text-decoration-line-through">$20.00</span>
-                            $18.00
+    
+    <div class="input-group input-group-lg shadow">
+        <input type="text" class="form-control" placeholder="Search brand or part number...">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+    </div>
+    <div class="row gx-4 gx-lg-5 mt-5">
+        {% for item in data %}
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="{% url 'h_product' item.brand.slug item.slug %}"><img src="{{item.first_image}}" class="img-fluid rounded-start" alt="{{item.slug}}" title="{{item.name}}"></a>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url 'h_product' item.brand.slug item.slug %}">{{item.brand}} {{item.name}}</a></h5>
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
                         </div>
                     </div>
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                    </div>
                 </div>
-                </a>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if data.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{data.previous_page_number}}">Previous</a></li>
+                {% endif %}
+
+                {% for page_num in page_range %}
+                <li class="page-item {% if page_num == data.number %}active{% endif %}"><a class="page-link" href="?page={{page_num}}">{{page_num}}</a></li>
+                {% endfor %}
+
+                {% if data.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{data.next_page_number}}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
-</section>
+</div>
 {% endblock %}

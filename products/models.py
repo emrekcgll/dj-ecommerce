@@ -29,6 +29,8 @@ class Category(BaseModel):
 
     class Meta:
         db_table = 'category'
+        ordering = ['name']
+
 
 
 class Brand(BaseModel):
@@ -50,6 +52,8 @@ class Brand(BaseModel):
 
     class Meta:
         db_table = 'brand'
+        ordering = ['name']
+
 
 
 class Product(BaseModel):
@@ -72,10 +76,11 @@ class Product(BaseModel):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.brand} {self.name}"
+        return f"{self.name}"
 
     class Meta:
         db_table = 'product'
+        ordering = ['-created_at']
 
 
 class Image(models.Model):
