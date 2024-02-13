@@ -31,5 +31,4 @@ urlpatterns = [
 
 
     path('import-data/', import_data, name='import-data'),
-    path('missing-images/', missing_images, name='missing-images'),
 ]

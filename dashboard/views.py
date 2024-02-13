@@ -86,7 +86,7 @@ def product_list_by_category(request, pk):
 
 def create_category(request):
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
+        form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save(commit=False)
             category.created_by = request.user
@@ -100,7 +100,7 @@ def create_category(request):
 def update_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
+        form = CategoryForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             category = form.save(commit=False)
             category.save()
@@ -115,11 +115,14 @@ def delete_category(request, pk):
     if request.method == 'POST':
         for product in Product.objects.filter(category=category):
             for image in Image.objects.filter(product=product):
-                try:
-                    os.remove(os.path.join(settings.MEDIA_ROOT, image.image.name))
-                    image.delete()
-                except Exception as e:
-                    print(e)
+                if image:
+                    try:
+                        os.remove(os.path.join(settings.MEDIA_ROOT, image.image.name))
+                        image.delete()
+                    except Exception as e:
+                        print(e)
+        if category.image:
+            os.remove(os.path.join(settings.MEDIA_ROOT, category.image.name))
         category.delete()
         return JsonResponse({'message': 'Category deleted successfully.'})
     return JsonResponse({'message': 'Category delete operation is unsuccessful.'}, status=400)
@@ -190,7 +193,7 @@ def product_list_by_brand(request, pk):
 
 def create_brand(request):
     if request.method == 'POST':
-        form = BrandForm(request.POST)
+        form = BrandForm(request.POST, request.FILES)
         if form.is_valid():
             brand = form.save(commit=False)
             brand.created_by = request.user
@@ -204,7 +207,7 @@ def create_brand(request):
 def update_brand(request, pk):
     brand = get_object_or_404(Brand, pk=pk)
     if request.method == 'POST':
-        form = BrandForm(request.POST, instance=brand)
+        form = BrandForm(request.POST, request.FILES, instance=brand)
         if form.is_valid():
             brand = form.save(commit=False)
             brand.save()
@@ -224,6 +227,8 @@ def delete_brand(request, pk):
                     image.delete()
                 except Exception as e:
                     print(e)
+        if brand.image:
+            os.remove(os.path.join(settings.MEDIA_ROOT, brand.image.name))
         brand.delete()
         return JsonResponse({'message': 'Brand deleted successfully.'})
     return JsonResponse({'message': 'Brand delete operation is unsuccessful.'}, status=400)
@@ -348,29 +353,3 @@ def import_data(request):
     else:
         form = ImportForm()
     return render(request, "dashboard/import_data.html", {"form": form})
-
-
-def missing_images(request):
-    # Media klasörü yolunu alın
-    media_root = f'{settings.MEDIA_ROOT}/product_image/'
-
-    # Veritabanında bulunan görsel dosyaların listesi
-    database_images = Image.objects.values_list('image', flat=True)
-
-    # Media klasöründeki görsel dosyaların listesi
-    media_files = [os.path.join(media_root, image)
-                   for image in os.listdir(media_root)]
-
-    # Media klasöründeki dosyaların yalnızca dosya adlarını alın
-    media_filenames = [os.path.basename(image) for image in media_files]
-
-    # Veritabanında bulunan ancak media klasöründe olmayan görsellerin listesi
-    missing_images = set(database_images) - set(media_filenames)
-
-    # Görsel dosyalarını içeren bir metin dosyası oluşturun
-    missing_images_text = "\n".join(missing_images)
-
-    # Metin dosyasını HttpResponse olarak döndürün
-    response = HttpResponse(missing_images_text, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="missing-images.txt"'
-    return response

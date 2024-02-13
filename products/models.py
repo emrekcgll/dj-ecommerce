@@ -6,13 +6,15 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    is_active = models.BooleanField(default=True)
+    
     class Meta:
         abstract = True
 
 class Category(BaseModel):
     slug = models.SlugField(unique=True, blank=True)
     name = models.CharField(max_length=100)
+    image = models.ImageField(null=True, blank=True, upload_to='category_image/')
 
     def product_count(self):
         return self.product_set.count()
@@ -36,6 +38,7 @@ class Category(BaseModel):
 class Brand(BaseModel):
     slug = models.SlugField(unique=True)
     name = models.CharField(max_length=100)
+    image = models.ImageField(null=True, blank=True, upload_to='brand_image/')
     
     def product_count(self):
         return self.product_set.count()

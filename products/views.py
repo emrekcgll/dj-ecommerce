@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from products.models import *
-
+from home.forms import RequestForm
 
 def categories(request):
     return render(request, 'home/categories.html')
@@ -85,4 +85,6 @@ def products(request, category_slug=None, brand_slug=None):
 
 def product(request, brand_slug, product_slug):
     product = get_object_or_404(Product, brand__slug=brand_slug, slug=product_slug)
-    return render(request, 'home/product.html', {'product': product})
+    form = RequestForm(requested_product=f"{product.brand.name} - {product.name}")
+
+    return render(request, 'home/product.html', {'product': product, 'form': form})

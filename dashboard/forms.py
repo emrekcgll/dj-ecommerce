@@ -5,19 +5,19 @@ from products.models import *
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name']
+        fields = ['name', 'image', 'is_active']
 
 
 class BrandForm(forms.ModelForm):
     class Meta:
         model = Brand
-        fields = ['name']
+        fields = ['name', 'image', 'is_active']
 
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['category', 'brand', 'name', 'description', 'price']
+        fields = ['category', 'brand', 'name', 'description', 'price', 'is_active']
 
 
 class ImportForm(forms.Form):

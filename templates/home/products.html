@@ -3,9 +3,11 @@
 
 {% block content %}
 <div class="container px-4 px-lg-5 py-5">
+
     <div class="row gx-4 gx-lg-5 align-items-center my-5">
         <div class="col-lg-7">
-            <img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/dee2e6/6c757d.jpg" alt="..." />
+            <!-- 900x400 -->
+            <img class="img-fluid rounded mb-4 mb-lg-0" src="{% if category.image %}{{category.image.url}}{% elif brand.image %}{{brand.image.url}}{% endif %}" alt="{% if category %}{{category.slug}}{% elif brand %}{{brand.slug}}{% endif %}" title="{% if category %}{{category.name}}{% elif brand %}{{brand.name}}{% endif %}" />
         </div>
         <div class="col-lg-5">
             <h1 class="font-weight-light">{% if category %}{{category}} Product List{% elif brand %}{{brand}} Product List{% endif %}</h1>
@@ -20,6 +22,7 @@
         <input type="text" class="form-control" placeholder="Search brand or part number...">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
     </div>
+
     <div class="row gx-4 gx-lg-5 mt-5">
         {% for item in data %}
         <div class="col-md-6">

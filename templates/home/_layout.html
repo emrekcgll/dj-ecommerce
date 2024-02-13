@@ -58,13 +58,6 @@
                 <div class="row align-items-center justify-content-between flex-column flex-sm-row">
                     <div class="col-auto"><div class="small m-0 text-white">Copyright &copy; EU Parts Hub {% now "Y" %}</div></div>
                     <div class="col-auto">
-                        {% if user.is_authenticated %}
-                        <a class="link-light small" href="{% url 'h_logout' %}">Logout</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        {% else %}
-                        <a class="link-light small" href="{% url 'h_login' %}">Login</a>
-                        <span class="text-white mx-1">&middot;</span>
-                        {% endif %}
                         <a class="link-light small" href="#!">Privacy</a>
                         <span class="text-white mx-1">&middot;</span>
                         <a class="link-light small" href="#!">Terms</a>
