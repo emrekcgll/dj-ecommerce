@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from products.models import *
@@ -88,3 +89,39 @@ def product(request, brand_slug, product_slug):
     form = RequestForm(requested_product=f"{product.brand.name} - {product.name}")
 
     return render(request, 'home/product.html', {'product': product, 'form': form})
+
+
+def search_product_by_category_or_brand(request, category_slug=None, brand_slug=None):
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        if request.accepts('application/json'):
+            product = request.POST.get('product')
+            query = Product.objects.filter(category=category, name__icontains=product)[:5]
+            if len(query) > 0 and len(product) > 0:
+                data = []
+                for x in query:
+                    item = {"name": x.name, "brand": x.brand.name,
+                            "productSlug": x.slug, "brandSlug": x.brand.slug}
+                    data.append(item)
+                res = data
+            else:
+                res = "Product does not found."
+        return JsonResponse({"data": res})
+    
+    elif brand_slug:
+        brand = get_object_or_404(Brand, slug=brand_slug)
+        if request.accepts('application/json'):
+            product = request.POST.get('product')
+            query = Product.objects.filter(brand=brand, name__icontains=product)[:5]
+            if len(query) > 0 and len(product) > 0:
+                data = []
+                for x in query:
+                    item = {"name": x.name, "brand": x.brand.name,
+                            "productSlug": x.slug, "brandSlug": x.brand.slug}
+                    data.append(item)
+                res = data
+            else:
+                res = "Product does not found."
+        return JsonResponse({"data": res})
+    
+    return JsonResponse({"data": "Invalid request."})

@@ -42,3 +42,10 @@ class RequestForm(forms.Form):
 
         if requested_product:
             self.fields['requested_product'].initial = requested_product
+
+
+class ContactForm(forms.Form):
+    name_surname = forms.CharField(label='Full Name', max_length=256)
+    email = forms.EmailField(label='Email', max_length=256)
+    phone = forms.CharField(label='Phone', max_length=256, required=False)
+    message = forms.CharField(label='Message', widget=forms.Textarea(attrs={'rows': 4}))

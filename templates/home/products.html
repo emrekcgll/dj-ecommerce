@@ -17,11 +17,15 @@
             <a class="btn btn-primary" href="#!">Call to Action!</a>
         </div>
     </div>
-    
-    <div class="input-group input-group-lg shadow">
-        <input type="text" class="form-control" placeholder="Search brand or part number...">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-    </div>
+
+    <form method="post">
+        <div class="input-group input-group-lg shadow">
+            {% csrf_token %}
+            <input type="text" class="form-control" id="search" name="search" data-slug="{% if category %}{{category.slug}}{% elif brand %}{{brand.slug}}{% endif %}" placeholder="Search part number...">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+        </div>
+        <div id="search-results"></div>
+    </form>
 
     <div class="row gx-4 gx-lg-5 mt-5">
         {% for item in data %}
@@ -59,4 +63,110 @@
         </nav>
     </div>
 </div>
+{% endblock %}
+
+{% block script %}
+{% if category %}
+<script>
+$(document).ready(function () {
+    var dataSlug = $('#search').data('slug');
+    var csrfToken = $('input[name=csrfmiddlewaretoken]').val()
+
+    $("#search").on("input", function () {
+        var searchValue = $(this).val();
+        
+        $.ajax({
+            type: "POST",
+            url: "/search_product_by_category_or_brand/"+dataSlug+"/",
+            data: {
+                'product': searchValue,
+                'csrfmiddlewaretoken': csrfToken,
+            },
+            success: function (data) {
+                var resultsContainer = document.getElementById("search-results");
+                resultsContainer.innerHTML = '';
+                if (Array.isArray(data.data)) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        resultsContainer.innerHTML += `
+                            <a href="/${data.data[i].brandSlug}/${data.data[i].productSlug}/">
+                                <ul class="list-group mb-0 mt-0">
+                                    <li class="list-group-item">
+                                        ${data.data[i].brand} ${data.data[i].name}
+                                    </li>
+                                </ul>
+                            </a>`;
+                        resultsContainer.style.display = 'block';
+                    }
+                } else {
+                    if (searchValue.length > 0){
+                        resultsContainer.innerHTML += `
+                        <a href="/contact/">
+                            <ul class="list-group mb-0 mt-0">
+                                <li class="list-group-item">
+                                    ${data.data}
+                                </li>
+                            </ul>
+                        </a>`;
+                    } else {
+                        resultsContainer.style.display = 'none';
+                    }
+                }
+            },
+            dataType: 'json'
+        });
+    });
+});
+</script>
+{% elif brand %}
+<script>
+    $(document).ready(function () {
+        var dataSlug = $('#search').data('slug');
+        var csrfToken = $('input[name=csrfmiddlewaretoken]').val()
+    
+        $("#search").on("input", function () {
+            var searchValue = $(this).val();
+            
+            $.ajax({
+                type: "POST",
+                url: "/search/search_product_by_category_or_brand/"+dataSlug+"/",
+                data: {
+                    'product': searchValue,
+                    'csrfmiddlewaretoken': csrfToken,
+                },
+                success: function (data) {
+                    var resultsContainer = document.getElementById("search-results");
+                    resultsContainer.innerHTML = '';
+                    if (Array.isArray(data.data)) {
+                        for (var i = 0; i < data.data.length; i++) {
+                            resultsContainer.innerHTML += `
+                                <a href="/${data.data[i].brandSlug}/${data.data[i].productSlug}/">
+                                    <ul class="list-group mb-0 mt-0">
+                                        <li class="list-group-item">
+                                            ${data.data[i].brand} ${data.data[i].name}
+                                        </li>
+                                    </ul>
+                                </a>`;
+                            resultsContainer.style.display = 'block';
+                        }
+                    } else {
+                        if (searchValue.length > 0){
+                            resultsContainer.innerHTML += `
+                            <a href="/contact/">
+                                <ul class="list-group mb-0 mt-0">
+                                    <li class="list-group-item">
+                                        ${data.data}
+                                    </li>
+                                </ul>
+                            </a>`;
+                        } else {
+                            resultsContainer.style.display = 'none';
+                        }
+                    }
+                },
+                dataType: 'json'
+            });
+        });
+    });
+    </script>
+{% endif %}
 {% endblock %}
